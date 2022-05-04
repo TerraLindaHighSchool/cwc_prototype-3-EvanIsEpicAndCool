@@ -8,6 +8,14 @@ using UnityEngine;
 /// </summary>
 public class PlayerController : MonoBehaviour
 {
+    private AudioSource playerAudio;
+
+    public AudioClip jumpSound;
+    public AudioClip crashSound;
+
+    public ParticleSystem explosionParticle;
+    public ParticleSystem dirtParticle;
+
     //Declares the rigidbody as a call-able class
     private Rigidbody playerRb;
     
@@ -18,7 +26,7 @@ public class PlayerController : MonoBehaviour
     public bool isOnGround = true;
     public bool gameOver = false;
 
-    private float speed = 30;
+   
 
     private Animator playerAnim;
 
@@ -29,6 +37,8 @@ public class PlayerController : MonoBehaviour
         playerRb = GetComponent<Rigidbody>();
         playerAnim = GetComponent<Animator>();
         Physics.gravity *= gravityModifier;
+
+        playerAudio = GetComponent<AudioSource>();
     }
 
     // Update is called once per frame
@@ -37,12 +47,14 @@ public class PlayerController : MonoBehaviour
         //Checks if the spacebar is down every frame
         if (Input.GetKeyDown(KeyCode.Space) && isOnGround && !gameOver)
         {
+            dirtParticle.Stop();
             playerRb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
             isOnGround = false;
             playerAnim.SetTrigger("Jump_trig");
+            playerAudio.PlayOneShot(jumpSound, 1.0f);
         }
 
-        
+
 
     }
 
@@ -50,16 +62,22 @@ public class PlayerController : MonoBehaviour
     {
         if (collision.gameObject.CompareTag("Ground"))
         {
+            dirtParticle.Play();
             isOnGround = true;
+            
         }
         else if (collision.gameObject.CompareTag("Obstacle"))
         {
+            
+            dirtParticle.Stop();
             playerAnim.SetBool("Death_b", true);
             playerAnim.SetInteger("DeathType_int", 1);
+            explosionParticle.Play();
             Debug.Log("Game Over!");
             gameOver = true;
-           
-            
+            playerAudio.PlayOneShot(crashSound, 1.0f);
+
+
         }
     }
 }
